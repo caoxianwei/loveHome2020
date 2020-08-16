@@ -16,17 +16,17 @@ func (this *AreaController) RetData(resp map[string]interface{}) {
 	this.ServeJSON()
 }
 
-func (c *AreaController) GetArea() {
+func (this *AreaController) GetArea() {
 	beego.Info("GetArea sucusse")
 
 	var resp map[string]interface{}
-	defer c.RetData(resp)
+	defer this.RetData(resp)
 
 	// 从数据库中读取数据
 	areasModel := []models.Area{}
 
 	o := orm.NewOrm()
-	_, allErr := o.QueryTable("area").All(&areasModel)
+	num, allErr := o.QueryTable("area").All(&areasModel)
 	if allErr != nil {
 		beego.Info("数据错误")
 		resp["errno"] = 4001
@@ -43,7 +43,7 @@ func (c *AreaController) GetArea() {
 	resp["errmsg"] = "OK"
 	resp["data"] = areasModel
 
-	beego.Info("数据查询成功")
+	beego.Info("数据查询成功, resp=", resp, "num =", num)
 	//json_str := json.Marshal(resp)
 	//c.Ctx.WriteString(json_str)
 	//c.Data["json"] = resp
