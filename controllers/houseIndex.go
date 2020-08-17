@@ -1,6 +1,9 @@
 package controllers
 
-import "github.com/astaxie/beego"
+import (
+	"github.com/astaxie/beego"
+	"loveHome2020/models"
+)
 
 type HouseIndexController struct {
 	beego.Controller
@@ -15,7 +18,7 @@ func (this *HouseIndexController) GetHouseIndex() {
 	beego.Info("GetHouseIndex function")
 
 	resp := make(map[string]interface{})
-	resp["errno"] = 4001
-	resp["errmsg"] = "查询失败"
+	resp["errno"] = models.RECODE_DATAERR
+	resp["errmsg"] = models.RecodeText(models.RECODE_DATAERR)
 	this.RetData(resp)
 }

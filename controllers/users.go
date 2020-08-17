@@ -41,5 +41,7 @@ func (this *UserController) Reg() {
 	resp["errno"] = 0
 	resp["errmsg"] = "注册成功"
 
+	this.SetSession("name", user.Name)
+
 	this.RetData(resp)
 }
