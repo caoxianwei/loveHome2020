@@ -15,7 +15,7 @@ func (this *SessionController) RetData(resp map[string]interface{}) {
 }
 
 func (this *SessionController) SessionData() {
-	beego.Info("GetHouseIndex function")
+	beego.Info("GetSessionData function")
 	resp := make(map[string]interface{})
 	defer this.RetData(resp)
 
@@ -32,4 +32,14 @@ func (this *SessionController) SessionData() {
 		resp["data"] = user
 	}
 
+}
+func (this *SessionController) DeleteSession() {
+	beego.Info("DeleteSession function")
+
+	resp := make(map[string]interface{})
+	defer this.RetData(resp)
+	this.DelSession("name")
+
+	resp["errno"] = models.RECODE_OK
+	resp["errmsg"] = models.RecodeText(models.RECODE_OK)
 }

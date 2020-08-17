@@ -12,7 +12,7 @@ func init() {
 	beego.Router("/api/v1.0/houses/index", &controllers.HouseIndexController{}, "get:GetHouseIndex")
 
 	// Session Controller
-	beego.Router("/api/v1.0/session", &controllers.SessionController{}, "get:SessionData")
+	beego.Router("/api/v1.0/session", &controllers.SessionController{}, "get:SessionData;delete:DeleteSession")
 	// User Controller
 	beego.Router("/api/v1.0/users", &controllers.UserController{}, "post:Reg")
 }
