@@ -1,13 +1,13 @@
 package controllers
 
 import (
-	"fmt"
+	"encoding/json"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/cache"
-	"github.com/astaxie/beego/orm"
 	_ "github.com/astaxie/beego/cache/redis"
-	"loveHome2020/models"
+	"github.com/astaxie/beego/orm"
 	_ "github.com/go-sql-driver/mysql"
+	"loveHome2020/models"
 	"time"
 )
 
@@ -36,14 +36,31 @@ func (this *AreaController) GetArea() {
 		return
 	}
 
-	errCache := cache_conn.Put("aaa", "bbbbaaa", time.Second * 3600)
-	if errCache != nil {
-		beego.Error("cacha err")
-	}
-	beego.Info("cache_conn.aa = ", cache_conn.Get("aaa"))
-	fmt.Printf("cache_conn[aa] = %s\n ",cache_conn.Get("aaa"))
-	// 从数据库中读取数据
 	areasModel := []models.Area{}
+
+	//errCache := cache_conn.Put("aaa", "bbbbaaa", time.Second * 3600)
+	//if errCache != nil {
+	//	beego.Error("cacha err")
+	//}
+	//beego.Info("cache_conn.aa = ", cache_conn.Get("aaa"))
+	//fmt.Printf("cache_conn[aa] = %s\n ",cache_conn.Get("aaa"))
+
+	// 从redis中取数据
+	if cache_conn.IsExist("area") {
+		if redisArea := cache_conn.Get("area"); redisArea != nil {
+			resp["errno"] = models.RECODE_OK
+			resp["errmsg"] = models.RecodeText(models.RECODE_OK)
+			//area := json.Unmarshal(redisArea, &models.Area{})
+			json.Unmarshal(redisArea.([]byte), &areasModel)
+			resp["data"] = areasModel
+
+			beego.Info("取到数据了")
+
+			return
+		}
+	}
+
+	// 从数据库中读取数据
 	o := orm.NewOrm()
 	num, allErr := o.QueryTable("area").All(&areasModel)
 	if allErr != nil {
@@ -61,6 +78,20 @@ func (this *AreaController) GetArea() {
 	resp["errno"] = 0
 	resp["errmsg"] = "OK"
 	resp["data"] = areasModel
+
+	// 将area数据存入Redis
+	jsonStr, jsonErr := json.Marshal(areasModel)
+	if jsonErr != nil {
+		resp["error"] = models.RECODE_DATAERR
+		resp["errmsg"] = models.RecodeText(models.RECODE_DATAERR)
+		return
+	}
+	redisPutErr := cache_conn.Put("area", jsonStr, time.Second * 3600)
+	if redisPutErr != nil {
+		resp["errno"] = 1234
+		resp["errmsg"] = "缓存操作失败了"
+		return
+	}
 
 	beego.Info("数据查询成功, resp=", resp, "num =", num)
 	//json_str := json.Marshal(resp)
