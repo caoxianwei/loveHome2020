@@ -1,12 +1,12 @@
 package main
 
 import (
-	"net/http"
-	"strings"
-	_ "loveHome2020/routers"
-	_ "loveHome2020/models"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/context"
+	_ "loveHome2020/models"
+	_ "loveHome2020/routers"
+	"net/http"
+	"strings"
 )
 
 func main() {
@@ -16,7 +16,6 @@ func main() {
 
 	beego.Run()
 }
-
 
 func ignoreStaticPath() {
 	// 透明static

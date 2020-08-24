@@ -15,6 +15,7 @@ func init() {
 	beego.Router("/api/v1.0/session", &controllers.SessionController{}, "get:SessionData;delete:DeleteSession")
 	// User Controller
 	beego.Router("/api/v1.0/users", &controllers.UserController{}, "post:Reg")
+	beego.Router("/api/v1.0/user", &controllers.UserController{}, "get:GetUserData")
 	beego.Router("/api/v1.0/sessions", &controllers.SessionController{}, "post:Login")
 
 	beego.Router("/api/v1.0/user/avatar", &controllers.UserController{}, "post:PostAvatar")

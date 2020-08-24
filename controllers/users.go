@@ -46,8 +46,34 @@ func (this *UserController) Reg() {
 	resp["errmsg"] = "注册成功"
 
 	this.SetSession("name", user.Name)
+	this.SetSession("user_id", user.Id)
+	this.SetSession("mobile", user.Mobile)
 
 	this.RetData(resp)
+}
+
+func (this *UserController) GetUserData() {
+	resp := make(map[string]interface{})
+	defer this.RetData(resp)
+
+	// 从Session中获取用户ID
+	user_id := this.GetSession("user_id")
+
+	userModel := models.User{}
+	// 查找用户信息
+	oneErr := orm.NewOrm().QueryTable("user").Filter("id", user_id).One(&userModel, "id", "name", "mobile","real_name", "id_card", "avatar_url")
+
+	if oneErr != nil {
+		resp["errno"] = models.RECODE_NODATA
+		resp["errmsg"] = models.RecodeText(models.RECODE_NODATA)
+		return
+	}
+
+	resp["errno"] = models.RECODE_OK
+	resp["errmsg"] = models.RecodeText(models.RECODE_OK)
+	resp["data"] = userModel
+
+	return
 }
 
 // 上传图片
@@ -74,13 +100,13 @@ func (this *UserController) PostAvatar() {
 	userid := this.GetSession("user_id")
 	useridString := strconv.Itoa(userid.(int))
 
-	dir := "static/upload/"+useridString+"/"
+	dir := "static/upload/" + useridString + "/"
 
 	// 创建目录 os.ModePerm: 0777权限
 	os.MkdirAll(dir, os.ModePerm)
 
 	// 图片名称
-	filename := dir+filetimeString+ext
+	filename := dir + filetimeString + ext
 
 	// 保存图片
 	SaveToFileErr := this.SaveToFile("avatar", filename)
