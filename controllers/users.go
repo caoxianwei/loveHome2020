@@ -5,6 +5,10 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/orm"
 	"loveHome2020/models"
+	"os"
+	"path"
+	"strconv"
+	"time"
 )
 
 type UserController struct {
@@ -44,4 +48,59 @@ func (this *UserController) Reg() {
 	this.SetSession("name", user.Name)
 
 	this.RetData(resp)
+}
+
+// 上传图片
+func (this *UserController) PostAvatar() {
+	resp := make(map[string]interface{})
+	defer this.RetData(resp)
+
+	// 获取上传数据
+	f, h, err := this.GetFile("avatar")
+	if err != nil {
+		resp["errno"] = models.RECODE_REQERR
+		resp["errmsg"] = models.RecodeText(models.RECODE_REQERR)
+
+		return
+	}
+	defer f.Close()
+
+	// 获取文件后缀
+	ext := path.Ext(h.Filename)
+	// 当前秒级时间戳
+	filetime := time.Now().Unix()
+	filetimeString := strconv.FormatInt(filetime, 10)
+	// 获取session中的userid
+	userid := this.GetSession("user_id")
+	useridString := strconv.Itoa(userid.(int))
+
+	dir := "static/upload/"+useridString+"/"
+
+	// 创建目录 os.ModePerm: 0777权限
+	os.MkdirAll(dir, os.ModePerm)
+
+	// 图片名称
+	filename := dir+filetimeString+ext
+
+	// 保存图片
+	SaveToFileErr := this.SaveToFile("avatar", filename)
+	if SaveToFileErr != nil {
+		resp["errno"] = 111
+		resp["errmsg"] = "图片保存失败"
+
+		return
+	}
+	upNum, upErr := orm.NewOrm().QueryTable("user").Filter("id", userid).Update(orm.Params{"avatar_url": filename})
+	if upErr != nil || upNum == 0 {
+		resp["errno"] = models.RECODE_USERERR
+		resp["errmsg"] = models.RecodeText(models.RECODE_USERERR)
+
+		return
+	}
+
+	resp["errno"] = models.RECODE_OK
+	resp["errmsg"] = models.RecodeText(models.RECODE_OK)
+	resp["data"] = filename
+
+	return
 }
