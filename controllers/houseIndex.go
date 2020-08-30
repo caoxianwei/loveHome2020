@@ -18,7 +18,8 @@ func (this *HouseIndexController) GetHouseIndex() {
 	beego.Info("GetHouseIndex function")
 
 	resp := make(map[string]interface{})
-	resp["errno"] = models.RECODE_DATAERR
-	resp["errmsg"] = models.RecodeText(models.RECODE_DATAERR)
-	this.RetData(resp)
+	defer this.RetData(resp)
+
+	resp["errno"] = models.RECODE_OK
+	resp["errmsg"] = models.RecodeText(models.RECODE_OK)
 }

@@ -46,7 +46,7 @@ func (this *UserController) Reg() {
 	resp["errmsg"] = "注册成功"
 
 	this.SetSession("name", user.Name)
-	this.SetSession("user_id", user.Id)
+	this.SetSession("user_id", id)
 	this.SetSession("mobile", user.Mobile)
 
 	this.RetData(resp)
@@ -73,6 +73,41 @@ func (this *UserController) GetUserData() {
 	resp["errmsg"] = models.RecodeText(models.RECODE_OK)
 	resp["data"] = userModel
 
+	return
+}
+
+// 更改用户名
+func (this *UserController) UpUserName() {
+	resp := make(map[string]interface{})
+	defer this.RetData(resp)
+
+	// 从Session中获取用户ID
+	user_id := this.GetSession("user_id")
+
+	// 获取提交过来的用户名
+	userNameMap := make(map[string]string)
+	UnmarshalErr := json.Unmarshal(this.Ctx.Input.RequestBody, &userNameMap)
+	if UnmarshalErr != nil {
+		resp["errno"] = models.RECODE_REQERR
+		resp["errmsg"] = models.RecodeText(models.RECODE_REQERR)
+
+		return
+	}
+
+	// 更改用户名
+	_, upErr := orm.NewOrm().QueryTable("user").Filter("id", user_id).Update(orm.Params{"name": userNameMap["name"]})
+	if upErr != nil {
+		resp["errno"] = models.RECODE_DBERR
+		resp["errmsg"] = models.RecodeText(models.RECODE_DBERR)
+		return
+	}
+
+	// 重新设置Session
+	this.SetSession("name", userNameMap["name"])
+
+	resp["errno"] = models.RECODE_OK
+	resp["errmsg"] = models.RecodeText(models.RECODE_OK)
+	resp["data"] = userNameMap["name"]
 	return
 }
 
@@ -127,6 +162,41 @@ func (this *UserController) PostAvatar() {
 	resp["errno"] = models.RECODE_OK
 	resp["errmsg"] = models.RecodeText(models.RECODE_OK)
 	resp["data"] = filename
+
+	return
+}
+
+func (this *UserController)  UserAuth()  {
+	resp := make(map[string]interface{})
+	defer this.RetData(resp)
+	// 获取当前提交的方法
+	if this.Ctx.Request.Method == "POST" {
+
+		// 获取提交过来的数据
+		userModel := models.User{}
+		UnmarshalErr := json.Unmarshal(this.Ctx.Input.RequestBody, &userModel)
+		if UnmarshalErr != nil {
+			resp["errno"] = models.RECODE_REQERR
+			resp["errmsg"] = models.RecodeText(models.RECODE_REQERR)
+
+			return
+		}
+		//beego.Info("userModel111", userModel, this.Ctx.Input.RequestBody)
+
+		// 获取当前Session用户id
+		userid := this.GetSession("user_id")
+
+		upNum, uperr := orm.NewOrm().QueryTable("user").Filter("id", userid).Update(orm.Params{"real_name": userModel.Real_name, "id_card": userModel.Id_card})
+		if uperr != nil || upNum == 0 {
+			resp["errno"] = models.RECODE_DBERR
+			resp["errmsg"] = models.RecodeText(models.RECODE_DBERR)
+
+			return
+		}
+
+		resp["errno"] = models.RECODE_OK
+		resp["errmsg"] = models.RecodeText(models.RECODE_OK)
+	}
 
 	return
 }
