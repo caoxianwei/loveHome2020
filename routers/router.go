@@ -10,6 +10,8 @@ func init() {
     beego.Router("/api/v1.0/areas", &controllers.AreaController{}, "get:GetArea")
 	// Hourse Controller
 	beego.Router("/api/v1.0/houses/index", &controllers.HouseIndexController{}, "get:GetHouseIndex")
+	beego.Router("/api/v1.0/user/houses", &controllers.HouseIndexController{}, "get:GetHouseData")
+	beego.Router("/api/v1.0/houses", &controllers.HouseIndexController{}, "post:PostHouseData")
 
 	// Session Controller
 	beego.Router("/api/v1.0/session", &controllers.SessionController{}, "get:SessionData;delete:DeleteSession")
