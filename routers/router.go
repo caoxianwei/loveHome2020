@@ -12,6 +12,7 @@ func init() {
 	beego.Router("/api/v1.0/houses/index", &controllers.HouseIndexController{}, "get:GetHouseIndex")
 	beego.Router("/api/v1.0/user/houses", &controllers.HouseIndexController{}, "get:GetHouseData")
 	beego.Router("/api/v1.0/houses", &controllers.HouseIndexController{}, "post:PostHouseData")
+	beego.Router("/api/v1.0/houses/:id([0-9]+)", &controllers.HouseIndexController{}, "get:HouseData")
 
 	// Session Controller
 	beego.Router("/api/v1.0/session", &controllers.SessionController{}, "get:SessionData;delete:DeleteSession")
@@ -23,4 +24,8 @@ func init() {
 	beego.Router("/api/v1.0/sessions", &controllers.SessionController{}, "post:Login")
 
 	beego.Router("/api/v1.0/user/avatar", &controllers.UserController{}, "post:PostAvatar")
+
+	//Orders
+	beego.Router("/api/v1.0/orders", &controllers.OrdersController{}, "post:PostOrders")
+	beego.Router("/api/v1.0/user/orders", &controllers.OrdersController{}, "get:GetOrdersData")
 }

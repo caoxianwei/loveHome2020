@@ -146,3 +146,50 @@ func (this *HouseIndexController) PostHouseData() {
 	ormer.Commit()
 	return
 }
+
+
+func (this *HouseIndexController) HouseData() {
+	resp := make(map[string]interface{})
+	defer this.RetData(resp)
+
+	houseMap := make(map[string]interface{})
+
+	// 获取当前用户userid
+	userid := this.GetSession("user_id")
+
+	// 获取id参数
+	//this.Ctx.Input.Param(":id")
+	id := this.GetString(":id")
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		resp["errno"] = models.RECODE_DATAERR
+		resp["errmsg"] = models.RecodeText(models.RECODE_DATAERR)
+		return
+	}
+
+	// 关联数据库
+	o := orm.NewOrm()
+	house := models.House{Id: idInt}
+	if reanErr := o.Read(&house); reanErr != nil {
+		resp["errno"] = models.RECODE_NODATA
+		resp["errmsg"] = models.RecodeText(models.RECODE_NODATA)
+
+		return
+	}
+
+	o.LoadRelated(&house, "Area")
+	o.LoadRelated(&house, "User")
+	o.LoadRelated(&house, "Images")
+	o.LoadRelated(&house, "Facilities")
+
+	users := models.User{Id: userid.(int)}
+	house.User = &users
+
+	houseMap["house"] = house
+
+	resp["data"] = houseMap
+	resp["errno"] = models.RECODE_OK
+	resp["errmsg"] = models.RecodeText(models.RECODE_OK)
+
+	return
+}
